@@ -1,0 +1,16 @@
+GET http://localhost:8080/airPollution 
+
+###Create new air pollution data
+POST http://localhost:8080/airPollution
+
+###Get air pollution data by id
+GET http://localhost:8080/airPollution/id
+
+###Update air pollution data by id
+PUT http://localhost:8080/airPollution/
+
+###Delete air pollution data by id
+DELETE http://localhost:8080/airPollution/id
+
+###404 Not Found
+GET http://localhost:8080/
