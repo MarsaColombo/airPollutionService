@@ -1,10 +1,6 @@
 const axios = require("axios");
 const { model } = require("mongoose");
-const airPollutionSchema = require("./models/airPollution");
-const { getCollectionListNames } = require("./connectionDB");
-
-const list =  getCollectionListNames()
-
+const AirPollution = require("./models/airPollution");
 const longitude = 50;
 const latitude = 50;
 const cityName = "Lille";
@@ -34,8 +30,6 @@ async function fetchAndPushData() {
       components,
       dt,
     };
-    const AirPollution = model(cityName, airPollutionSchema);
-
     await AirPollution.insertMany(airPollutionData);
     console.log("Data inserted successfully");
   } catch (error) {
@@ -44,6 +38,5 @@ async function fetchAndPushData() {
 }
 
 const seedDB = () => setInterval(fetchAndPushData, 60000);
-
 
 module.exports = seedDB();

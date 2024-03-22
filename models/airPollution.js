@@ -23,4 +23,3 @@ const airPollutionSchema = new Schema({
 });
 
 module.exports = model("AirPollution", airPollutionSchema);
-module.exports = {airPollutionSchema}

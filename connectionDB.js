@@ -1,25 +1,18 @@
 const mongoose = require('mongoose');
 
-const uri = "mongodb+srv://marsacolombo:7o9HtDdm!%40pxjQym@atlascluster.3fnynnz.mongodb.net/test";
-
 async function connectDB() {
-  const collectionListNames = [];
+  const uri = process.env.MONGODB_URI;
   try {
-    await mongoose.connect(uri);
-    const dbList =  await mongoose.connection.db.listCollections().toArray();
-    
-    for await (const collection of dbList){
-      collectionListNames.push(collection.name);
-    }
+    const connection = mongoose.connect(uri);
+    const collectionsPromise = connection.then(() => mongoose.connection.db.listCollections().toArray());
+
+    const [collections] = await Promise.all([collectionsPromise]);
+
+    const collectionNames = collections.map(collection => collection.name);
+    return collectionNames;
   } catch (error) {
     console.log("Error", error);
   }
-  return collectionListNames;
-};
+}
 
-const getCollectionListNames = async () => {
-  const collectionListNames =  await mongoose.connection.db.listCollections().toArray();
-  return collectionListNames;
-};
-
-module.exports = { connectDB, getCollectionListNames, mongoose };
+module.exports = { connectDB };

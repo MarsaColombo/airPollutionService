@@ -1,11 +1,10 @@
 const axios = require("axios");
-
+const env = require("dotenv").config();
 async function fetchCoords(cityName) {
   const limit = 1;
-  const apiKey = "c774d4cab1c0de230f6bf88780aeb5fe";
   try {
     const response = await axios.get(
-      `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=${limit}&appid=${apiKey}`
+      `http://api.openweathermap.org/geo/1.0/direct?q=${cityName}&limit=${limit}&appid=${process.env.OPENAPI_API_KEY}`
     );
     const data = response.data[0];
     return data;
