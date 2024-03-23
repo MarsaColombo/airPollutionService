@@ -4,6 +4,7 @@ const AirPollution = require("./models/airPollution");
 const longitude = 50;
 const latitude = 50;
 const cityName = "Lille";
+
 async function fetchData(lon, lat) {
   try {
     const response = await axios.get(
@@ -18,7 +19,7 @@ async function fetchData(lon, lat) {
 }
 
 async function fetchAndPushData() {
-  try {
+      try {
     const {
       coord,
       list: [{ main, dt, components }],

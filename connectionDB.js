@@ -1,18 +1,22 @@
 const mongoose = require('mongoose');
+const events = require('events');
+const eventEmitter = new events.EventEmitter();
 
 async function connectDB() {
   const uri = process.env.MONGODB_URI;
-  try {
-    const connection = mongoose.connect(uri);
-    const collectionsPromise = connection.then(() => mongoose.connection.db.listCollections().toArray());
-
-    const [collections] = await Promise.all([collectionsPromise]);
-
-    const collectionNames = collections.map(collection => collection.name);
-    return collectionNames;
-  } catch (error) {
-    console.log("Error", error);
-  }
+  await mongoose.connect(uri);
+  mongoose.connection.on('connected', async () => {
+    try {
+      const collections = await mongoose.connection.db.listCollections().toArray();
+      const collectionNames = collections.map(collection => collection.name);      
+      return collectionNames;
+    } catch (error) {
+      console.log("Error", error);
+    }
+    });
+    return (await mongoose.connection.db.listCollections().toArray());
 }
 
-module.exports = { connectDB };
+
+
+module.exports = { connectDB , eventEmitter};
