@@ -1,6 +1,7 @@
 const { response } = require("express");
 const AirPollution = require("../models/airPollution.js");
 const coords = require("./coordinatesCall");
+const { fetchAndPushData } = require("../seedData.js");
 const getAirPollution = async (req, res) => {
   const { city } = req.query;
   const page = parseInt(req.query.page) || 1;
@@ -11,13 +12,18 @@ const getAirPollution = async (req, res) => {
     return;
   }
   const { lon, lat } = localisation;
-  console.log(lon, lat)
+  const collectionList = global.list;
   
   try {
     if (!lon || !lat) {
       return res
         .status(400)
         .send({ message: "Les paramètres lon et lat sont nécessaires." });
+    }
+
+    if(!collectionList.includes(city)){
+      fetchAndPushData(city, lon, lat);
+      console.log(collectionList);
     }
 
     if (page < 1 || pageSize < 1) {

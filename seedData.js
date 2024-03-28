@@ -1,9 +1,26 @@
 const axios = require("axios");
-const { model } = require("mongoose");
-const AirPollution = require("./models/airPollution");
-const longitude = 50;
-const latitude = 50;
-const cityName = "Lille";
+const { Schema, model } = require("mongoose");
+
+const cityAirPollution = new Schema({
+  coord: {
+    lon: Number,
+    lat: Number,
+  },
+  main: {
+    aqi: Number,
+  },
+  components: {
+    co: Number,
+    no: Number,
+    no2: Number,
+    o3: Number,
+    so2: Number,
+    pm2_5: Number,
+    pm10: Number,
+    nh3: Number,
+  },
+  dt: Number,
+});
 
 async function fetchData(lon, lat) {
   try {
@@ -18,8 +35,8 @@ async function fetchData(lon, lat) {
   }
 }
 
-async function fetchAndPushData() {
-      try {
+async function fetchAndPushData(cityName, longitude, latitude) {
+  try {
     const {
       coord,
       list: [{ main, dt, components }],
@@ -31,13 +48,12 @@ async function fetchAndPushData() {
       components,
       dt,
     };
-    await AirPollution.insertMany(airPollutionData);
-    console.log("Data inserted successfully");
+    const city = await new model(cityName, cityAirPollution);
+    await city.insertMany(airPollutionData);
   } catch (error) {
     console.error("Erreur lors de la récupération des données:", error);
   }
 }
 
-const seedDB = () => setInterval(fetchAndPushData, 60000);
-
-module.exports = seedDB();
+const seedDB = (cityName, lon , lat) => () => fetchAndPushData(cityName, lon ,lat);
+module.exports = { fetchAndPushData, seedDB, cityAirPollution };

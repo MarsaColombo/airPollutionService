@@ -1,56 +1,57 @@
-const { connectDB, eventEmitter } = require("./connectionDB.js");
-const seedDB = require("./seedData.js");
+const { connectDB } = require("./connectionDB.js");
+const { seedDB, cityAirPollution } = require("./seedData.js");
 const app = require("./connectionServer.js");
-const AirPollution = require("./models/airPollution.js");
 const router = require("./routes/airPollution.js");
-const manageAirPollutionDocuments = async () => {
-  let count = await AirPollution.countDocuments();
-  while (true) {
-    if (count > 50) {
-      const docs = await AirPollution.find().sort({ _id: 1 }).limit(49);
-      const lastDocId = docs[docs.length - 1]._id;
-      await AirPollution.deleteMany({ _id: { $gt: lastDocId } });
-      console.log("deleted successfully");
-    } else if (count < 50) {
-      seedDB;
-    }
-
-    count = await AirPollution.countDocuments();
-    await new Promise((resolve) => setTimeout(resolve, 6000));
-  }
-};
-
+const mongoose = require("mongoose");
+const { Schema, model } = mongoose;
+const { fetchCoords } = require("./helpers/coordinatesCall.js") ;
 let list = [];
 
 const main = async () => {
   try {
     const dbCollectionList = await connectDB();
-    manageAirPollutionDocuments();
-    return dbCollectionList;
-  } catch (error) {
-    console.error("Error", error);
-  }
-};
-
-const execute = async () => {
-  try {
-    main().then((dbCollectionList) => {
-      dbCollectionList.forEach((collection) => {
-        list.push(collection.name);
-      });
-      console.log(list); 
+    dbCollectionList.forEach((collection) => {
+      list.push(collection.name);
     });
+    global.list = list;
+    return list;
   } catch (error) {
     console.error("Error", error);
   }
 };
 
-execute();
+const manageAirPollutionDocuments = async (list) => { 
+  while (true) {
+    for await (let i of list) {
+      const cityName = i;
+    
+      const AirPollution = new model(cityName, cityAirPollution);
+      let count = await AirPollution.countDocuments();
+      const city = await fetchCoords(cityName);      
+      const lon = city?.lon;
+      const lat = city?.lat;
 
+      if (count <= 0) {
+        seedDB(cityName, lon, lat); 
+        console.log("No documents found, seeding database...");
+      } else if (count > 50) {
+        const docs = await AirPollution.find().sort({ _id: 1 }).limit(50);
+        const lastDocId = docs[docs.length - 1]._id;
+        await AirPollution.deleteMany({ _id: { $gt: lastDocId } })}
+        console.log("Database cleaned up, deleting documents...");
+    }
+    await new Promise(resolve => setTimeout(resolve, 10000));
+  }
+};
+
+main().then((list) => {
+  manageAirPollutionDocuments(list);
+});
 
 
 
 app.use("/airPollution", router);
+
 app.use((req, res, next) => {
   error = new Error("Not found");
   next(error);
@@ -66,4 +67,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-module.exports = { main };
+module.exports = {};

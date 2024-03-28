@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-const events = require('events');
-const eventEmitter = new events.EventEmitter();
 
 async function connectDB() {
   const uri = process.env.MONGODB_URI;
@@ -17,6 +15,4 @@ async function connectDB() {
     return (await mongoose.connection.db.listCollections().toArray());
 }
 
-
-
-module.exports = { connectDB , eventEmitter};
+module.exports = { connectDB };
