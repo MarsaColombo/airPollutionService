@@ -48,12 +48,21 @@ async function fetchAndPushData(cityName, longitude, latitude) {
       components,
       dt,
     };
-    const city = await new model(cityName, cityAirPollution);
+
+    const city = model(cityName, cityAirPollution);
     await city.insertMany(airPollutionData);
   } catch (error) {
     console.error("Erreur lors de la récupération des données:", error);
   }
 }
 
-const seedDB = (cityName, lon , lat) => () => fetchAndPushData(cityName, lon ,lat);
-module.exports = { fetchAndPushData, seedDB, cityAirPollution };
+const seedDB = async (cityName, lon, lat) => {
+  try {
+    await fetchAndPushData(cityName, lon, lat);
+    
+  } catch (error) {
+    console.error("Erreur lors de l'insertion des données:", error);
+  }
+}
+
+module.exports = { seedDB, cityAirPollution };

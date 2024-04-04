@@ -4,7 +4,7 @@ const app = require("./connectionServer.js");
 const router = require("./routes/airPollution.js");
 const mongoose = require("mongoose");
 const { Schema, model } = mongoose;
-const { fetchCoords } = require("./helpers/coordinatesCall.js") ;
+const { fetchCoords } = require("./helpers/coordinatesCall.js");
 let list = [];
 
 const main = async () => {
@@ -20,35 +20,34 @@ const main = async () => {
   }
 };
 
-const manageAirPollutionDocuments = async (list) => { 
+const manageAirPollutionDocuments = async (list) => {
   while (true) {
-    for await (let i of list) {
-      const cityName = i;
-    
-      const AirPollution = new model(cityName, cityAirPollution);
+    for await (const i of list) {
+      const cityName = i;      
+
+      const AirPollution = await new model(cityName, cityAirPollution);
       let count = await AirPollution.countDocuments();
-      const city = await fetchCoords(cityName);      
+      const city = await fetchCoords(cityName);
       const lon = city?.lon;
       const lat = city?.lat;
 
-      if (count <= 0) {
-        seedDB(cityName, lon, lat); 
+      if (count < 50) {
+        seedDB(cityName, lon, lat);
         console.log("No documents found, seeding database...");
       } else if (count > 50) {
         const docs = await AirPollution.find().sort({ _id: 1 }).limit(50);
-        const lastDocId = docs[docs.length - 1]._id;
-        await AirPollution.deleteMany({ _id: { $gt: lastDocId } })}
+        const lastDocId = await docs[docs.length - 1]._id;
+        await AirPollution.deleteMany({ _id: { $gt: lastDocId } });
         console.log("Database cleaned up, deleting documents...");
+      }
     }
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    await new Promise((resolve) => setTimeout(resolve, 1000));
   }
 };
 
 main().then((list) => {
   manageAirPollutionDocuments(list);
 });
-
-
 
 app.use("/airPollution", router);
 
